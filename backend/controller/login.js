@@ -1,6 +1,8 @@
 import z from 'zod'
 import jwt from 'jsonwebtoken'
 import { password } from 'bun'
+import usermodel from '../models/User'
+import bcrypt from 'bcrypt'
 
 const loginValidate = z.object({
     email: z.string().email("Invlid email"),
@@ -10,9 +12,9 @@ const loginValidate = z.object({
 
 const login = async (req,res)=>{
    try{ const {email,password} = req.body
-    const validate = loginValidate({email,password})
+    const validate = loginValidate.safeParse({email,password})
     if(!validate.success){
-       return res.status(400).json({message:validate.errors})
+       return res.status(400).json({message:"zod"})
     }
     const user = await usermodel.findOne({email})
     if(!user){
@@ -33,6 +35,7 @@ const login = async (req,res)=>{
     })
 }catch(e){
         res.status(500).json({message:"Internal Server error"})
+        console.log(e)
     }
 }
 export default login
