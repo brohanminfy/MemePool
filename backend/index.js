@@ -1,7 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-import router from './controller/MemeControllar.js';
+import mrouter from './Router/MemeRouter.js';
+import urouter from './Router/UserRouter.js'
 
 dotenv.config();
 
@@ -10,8 +11,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use('/api/meme', router);
-app.use('')
+app.use('/api/meme', mrouter);
+app.use('/api/verify',urouter)
 
 await connectDB()
 

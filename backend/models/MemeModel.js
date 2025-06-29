@@ -2,17 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const MemeModel = new Schema(
   {
-    username: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
+    
     meme: [
       {
         type: String, 
@@ -22,6 +12,12 @@ const MemeModel = new Schema(
       type: Date,
       default: Date.now,
     },
+    
+    author:{
+      type :Schema.Types.ObjectId,
+      ref:'User',
+      required:true
+    }
   }
 );
 
