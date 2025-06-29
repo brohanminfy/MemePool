@@ -81,7 +81,7 @@ const EditMemeModel = ({ meme, isOpen, onClose }) => {
                 <img
                   src={imageUrl}
                   alt="Current meme"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
                     e.target.src = 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=400';
                   }}

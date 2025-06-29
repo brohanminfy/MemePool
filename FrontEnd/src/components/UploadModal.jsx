@@ -218,7 +218,7 @@ const UploadModal = ({ isOpen, onClose }) => {
                   <img
                     src={previewUrl}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     onError={() => setPreviewUrl('')}
                   />
                 </div>

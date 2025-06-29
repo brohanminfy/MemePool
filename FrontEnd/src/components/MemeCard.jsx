@@ -46,7 +46,7 @@ const MemeCard = ({ meme }) => {
         <img
           src={meme.imageUrl}
           alt={meme.caption}
-          className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+          className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-105 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setImageLoaded(true)}
