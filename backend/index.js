@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use('/api/meme', router);
+app.use('')
 
 await connectDB()
 
