@@ -13,6 +13,9 @@ const likeMeme = async (req,res)=>{
         if(!meme){
             return res.status(401).json({"success":"fail",'message':"Meme not found"})
         }
+        if(meme.author.toString()===user.id.toString()){
+            return res.status(403).json({"sucess":false,"error":"You can't like your own meme dude"})
+        }
        const liked =  meme.likes.includes(user.id)
     //    console.log(liked)
        if(liked){

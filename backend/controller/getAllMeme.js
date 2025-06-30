@@ -9,9 +9,6 @@ const getAllMeme = async (req, res) => {
       .populate('author', 'username')
       .populate('likes', 'username'); 
 
-      
-  
-  
     return res.status(200).json({ data: allmemes });
   } catch (e) {
     return res.status(500).json({ message: 'fail', error: e.message });
