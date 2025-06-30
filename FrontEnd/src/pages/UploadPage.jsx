@@ -133,7 +133,7 @@ const UploadPage = () => {
               <Upload className="w-5 h-5" />
               <span>Upload File</span>
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 setUploadMethod('url');
@@ -152,7 +152,7 @@ const UploadPage = () => {
             >
               <Link className="w-5 h-5" />
               <span>Image URL</span>
-            </button>
+            </button> */}
           </div>
 
           {/* File Upload */}
