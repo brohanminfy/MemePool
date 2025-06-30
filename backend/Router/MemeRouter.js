@@ -4,10 +4,14 @@ import upload from '../middleware/uploadMiddleware.js';
 import Meme from '../models/MemeModel.js';
 import uploadMeme from '../controller/uploadMeme.js';
 import getAllMeme from '../controller/getAllMeme.js';
+import auth from '../authentication/auth.js'
+import likeMeme from '../controller/Like.js';
 
 const mrouter = express.Router();
 
-mrouter.post('/upload', upload.array('memes', 10), uploadMeme);
-mrouter.get('/getmeme',getAllMeme)
+mrouter.post('/upload',auth, upload.array('memes', 1), uploadMeme);
+mrouter.get('/getmeme',auth, getAllMeme)
+mrouter.put('/likes/:id',auth,likeMeme)
+
 
 export default mrouter;

@@ -28,32 +28,53 @@ const UploadModal = ({ isOpen, onClose }) => {
     setPreviewUrl(url);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if ((!imageFile && !imageUrl.trim()) || !user) return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setIsLoading(true);
+  if ((!imageFile && !imageUrl.trim()) || !user) return;
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  setIsLoading(true);
 
-    let finalImageUrl = imageUrl;
-    
-    // If file upload, simulate file upload to server
-    if (uploadMethod === 'file' && imageFile) {
-      // In real app, this would upload to server and return URL
-      finalImageUrl = previewUrl; // Using preview URL for demo
-    }
+  const formData = new FormData();
 
+  if (uploadMethod === 'file' && imageFile) {
+    formData.append('memes', imageFile); // 'memes' should match the multer field name
+  } else if (uploadMethod === 'url' && imageUrl) {
+    formData.append('imageUrl', imageUrl); // optional if backend supports direct URL upload
+  }
+
+  formData.append('caption', caption);
+
+  try {
+    const token = localStorage.getItem('token');
+
+    const res = await fetch('http://localhost:5000/api/meme/upload', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`, // JWT auth header
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+    // Optional: add to global state
     addMeme({
-      imageUrl: finalImageUrl,
-      caption: caption.trim(),
+      imageUrl: data.data?.meme?.[0],
+      caption: data.data?.caption,
       uploader: user.username,
     });
 
-    setIsLoading(false);
     handleClose();
-  };
+  } catch (err) {
+    console.error('Upload error:', err.message);
+    alert(err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleClose = () => {
     setImageFile(null);

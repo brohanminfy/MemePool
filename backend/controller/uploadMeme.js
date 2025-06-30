@@ -5,9 +5,9 @@ import Meme from '../models/MemeModel.js';
 
 const uploadMeme = async (req, res) => {
   try {
-    const { author } = req.body;
-
-    if (!author) {
+    const {id} = req.user;
+    const ucaption = req.body.caption;
+    if (!id) {
       return res.status(400).json({ error: 'Author (user ID) is required' });
     }
 
@@ -18,8 +18,9 @@ const uploadMeme = async (req, res) => {
     const imageUrls = req.files.map(file => file.path); // Cloudinary URLs
 
     const newMeme = new Meme({
-      author,
-      meme: imageUrls
+      author:id,
+      meme: imageUrls,
+      caption:ucaption
     });
 
     await newMeme.save();

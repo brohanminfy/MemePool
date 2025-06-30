@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AppContext = createContext(undefined);
 
@@ -49,58 +50,108 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('theme', 'light');
     }
   };
-
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    console.error("Invalid JWT Token", e);
+    return {};
+  }
+}
   const login = async (email, password) => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simple validation for demo
-    if (email && password.length >= 6) {
-      const newUser = {
-        id: Date.now().toString(),
-        username: email.split('@')[0],
-        email,
-        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-        createdAt: new Date(),
-      };
-      
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setIsLoading(false);
-      return true;
+  setIsLoading(true);
+
+  try {
+    const res = await fetch('http://localhost:5000/api/verify/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Login failed');
     }
-    
+
+    // Extract token and set user info from token or backend if returned
+    const token = data.token;
+    const userInfo = parseJwt(token); // Optional: decode JWT to get user data
+
+    const newUser = {
+      id: userInfo.id,
+      username: userInfo.username,
+      email: userInfo.email,
+      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+      createdAt: new Date()
+    };
+
+    localStorage.setItem('token', token);         // Store JWT
+    localStorage.setItem('user', JSON.stringify(newUser)); // Store user info
+
+    setUser(newUser);
+    setIsLoading(false);
+    return true;
+
+  } catch (err) {
+    console.error('Login error:', err.message);
+    alert(err.message);
     setIsLoading(false);
     return false;
-  };
+  }
+};
 
   const signup = async (username, email, password) => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simple validation for demo
-    if (username && email && password.length >= 6) {
-      const newUser = {
-        id: Date.now().toString(),
+  setIsLoading(true);
+
+  try {
+    const res = await fetch('http://localhost:5000/api/verify/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
         username,
         email,
-        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-        createdAt: new Date(),
-      };
-      
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setIsLoading(false);
-      return true;
-    }
+        password,
+        confirmpassword: password
+      })
+    });
+
+    const data = await res.json();
     
+    if (!res.ok) {
+      throw new Error(data.error || 'Signup failed');
+    }
+
+    const token = data.token;
+    const userInfo = parseJwt(token); // Decode token
+
+    const newUser = {
+      id: userInfo.id,
+      username: userInfo.username || username,
+      email: userInfo.email,
+      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+      createdAt: new Date()
+    };
+
+    localStorage.setItem('token', token); // store JWT
+    localStorage.setItem('user', JSON.stringify(newUser));
+
+    setUser(newUser);
+    setIsLoading(false);
+    return true;
+
+  } catch (err) {
+    console.error('Signup error:', err.message);
+    alert(err.message);
     setIsLoading(false);
     return false;
-  };
+  }
+};
+
 
   const logout = () => {
     setUser(null);
@@ -139,86 +190,65 @@ export const AppProvider = ({ children }) => {
       !(meme.id === memeId && meme.uploaderId === user.id)
     ));
   };
+const likeMeme = async (memeId) => {
+  if (!user) return;
 
-  const likeMeme = (memeId) => {
-    if (!user) return;
-    
-    setMemes(prev => prev.map(meme => {
-      if (meme.id === memeId) {
-        const hasLiked = meme.likedBy.includes(user.username);
-        return {
-          ...meme,
-          likes: hasLiked ? meme.likes - 1 : meme.likes + 1,
-          likedBy: hasLiked 
-            ? meme.likedBy.filter(username => username !== user.username)
-            : [...meme.likedBy, user.username]
-        };
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`http://localhost:5000/api/memes/likes/${memeId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
       }
-      return meme;
-    }));
-  };
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to like/unlike meme');
+
+    // Update likes count in state
+    setMemes(prev =>
+      prev.map(meme =>
+        meme._id === memeId
+          ? { ...meme, likes: data.totalLikes }
+          : meme
+      )
+    );
+  } catch (err) {
+    console.error("Like/unlike failed:", err.message);
+  }
+};
 
   const getUserMemes = (userId) => {
     return memes.filter(meme => meme.uploaderId === userId);
   };
 
-  // Simulate fetching memes from backend with pagination
-  const fetchMemes = async (page = 1) => {
-    setIsLoadingMore(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const memesPerPage = 15;
-    const startIndex = (page - 1) * memesPerPage;
-    
-    const sampleImages = [
-      'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/2071882/pexels-photo-2071882.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1404819/pexels-photo-1404819.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1629781/pexels-photo-1629781.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1741205/pexels-photo-1741205.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=400',
-      'https://images.pexels.com/photos/1056251/pexels-photo-1056251.jpeg?auto=compress&cs=tinysrgb&w=400'
-    ];
-
-    const sampleCaptions = [
-      'When you finally understand React hooks',
-      'Me debugging at 3 AM',
-      'When your code works on the first try',
-      'Trying to explain programming to non-programmers',
-      'When you find the bug after 3 hours',
-      'Me after deploying to production',
-      'When someone asks if you tested your code',
-      'Reviewing code written 6 months ago',
-      'When the client changes requirements again',
-      'Me pretending to understand the legacy code'
-    ];
-
-    const sampleUsers = ['DevCat', 'NightOwl', 'LuckyDev', 'CodeNinja', 'BugHunter'];
-
-    const newMemes = Array.from({ length: memesPerPage }, (_, index) => {
-      const globalIndex = startIndex + index;
-      return {
-        id: `sample-${globalIndex}`,
-        imageUrl: sampleImages[globalIndex % sampleImages.length],
-        caption: sampleCaptions[globalIndex % sampleCaptions.length],
-        uploader: sampleUsers[globalIndex % sampleUsers.length],
-        uploaderId: `user-${globalIndex % sampleUsers.length}`,
-        likes: Math.floor(Math.random() * 200),
-        likedBy: [],
-        createdAt: new Date(Date.now() - (globalIndex * 1000 * 60 * Math.random() * 60))
-      };
+  const fetchMemes = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
 
-    const totalMemes = 60;
-    const hasMore = startIndex + memesPerPage < totalMemes;
+    const rawMemes = response.data.data;
+    const processedMemes = rawMemes.map(meme => ({
+      _id: meme._id,
+      imageUrl: meme.meme?.[0] || '',
+      caption: meme.caption || '',
+      uploader: meme.author?.username || 'Unknown',
+      uploaderId: meme.author?._id || '',
+      likes: Array.isArray(meme.likes) ? meme.likes : [],
+      createdAt: meme.createdAt
+    }));
 
-    setIsLoadingMore(false);
-    return { memes: newMemes, hasMore };
-  };
+    setMemes(processedMemes);
+  } catch (err) {
+    console.error('Failed to fetch memes:', err);
+  }
+};
+
 
   const loadMoreMemes = async () => {
     if (isLoadingMore || !hasMoreMemes) return;

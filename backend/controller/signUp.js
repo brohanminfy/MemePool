@@ -19,44 +19,58 @@ const signUpValidation = z.object({
     path:["confirmpassword"],
     message:"Passwords do not match"
 })
+const signUp = async (req, res) => {
+  try {
+    const { username, email, password, confirmpassword } = req.body;
 
-const signUp = async (req,res)=>{
-    try{
-        const {username,email,password,confirmpassword}= req.body
-        const verifyUser = signUpValidation.safeParse({username,email,password,confirmpassword})
-        if(!verifyUser.success){
-            return res.status(403).json({message:"Invalid signup","user":verifyUser})
-        }
-        const existingUser = await usermodel.findOne({$or:[{email},{username}]})
-        if(existingUser){
-            return res.status(400).json({message:"User already exists"})
-        }
-        const hashpassword = await bcrypt.hash(password,10)
+    const verifyUser = signUpValidation.safeParse({ username, email, password, confirmpassword });
 
-        const newUser = new usermodel({
-            username,
-            email,
-            password:hashpassword
-        })
-        await newUser.save()
-
-        const token = jwt.sign(
-            {
-                id:newUser._id,
-                email :newUser.email
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn:"1d"
-            }
-        );
-
-        res.status(200).json({message:"User registered successfully",token})
-    }catch(e){
-        res.status(500).json({message:"Internal error"})
-        console.log(e)
+    if (!verifyUser.success) {
+      return res.status(403).json({
+        message: "Invalid signup",
+        errors: verifyUser.error.flatten()
+      });
     }
 
-}
+    const existingUser = await usermodel.findOne({
+      $or: [{ email }, { username }]
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashpassword = await bcrypt.hash(password, 10);
+
+    const newUser = new usermodel({
+      username,
+      email,
+      password: hashpassword
+    });
+
+    await newUser.save();
+
+    const token = jwt.sign(
+      {
+        id: newUser._id,
+        email: newUser.email,
+        username: newUser.username
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d"
+      }
+    );
+
+    res.status(200).json({
+      message: "User registered successfully",
+      token
+    });
+
+  } catch (e) {
+    console.error("Signup error:", e);
+    return res.status(500).json({ message: "Internal error" });
+  }
+};
 
 export default signUp

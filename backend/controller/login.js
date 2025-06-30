@@ -25,7 +25,9 @@ const login = async (req,res)=>{
         return res.status(400).json({message:"Invalid creds"})
     }
     const token = jwt.sign(
-        {id:user._id,email:user.email,username:user.username},
+        {id:user._id,
+        email:user.email,
+        username:user.username},
         process.env.JWT_SECRET,
         {expiresIn:"1d"}
     )
