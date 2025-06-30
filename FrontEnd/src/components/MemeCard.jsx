@@ -88,18 +88,20 @@ const MemeCard = ({ meme }) => {
           </div>
 
           {/* Like Button */}
-          <button
-            onClick={handleLike}
-            disabled={!user}
-            className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
-              isDarkMode
-                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-red-400'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-red-500'
-            }`}
-          >
-            <Heart className="w-4 h-4" />
-            <span className="text-sm font-medium">{meme.likes}</span>
-          </button>
+         <button
+  onClick={handleLike}
+  disabled={!user}
+  className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
+    isDarkMode
+      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+  }`}
+>
+  <Heart
+    className={`w-4 h-4 ${meme.likes.includes(user?.id) ? 'text-red-500 fill-red-500' : ''}`}
+  />
+  <span className="text-sm font-medium">{meme.likes.length}</span>
+</button>
         </div>
       </div>
     </div>

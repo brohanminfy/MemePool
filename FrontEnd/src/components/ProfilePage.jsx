@@ -181,7 +181,7 @@ const ProfilePage = ({ onBack }) => {
                         isDarkMode ? 'text-gray-400' : 'text-gray-500'
                       }`}>
                         <Heart className="w-4 h-4" />
-                        <span>{meme.likes} likes</span>
+                        <span>{meme.likes.length} likes</span>
                       </div>
                       <span className={`transition-colors duration-500 ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-500'

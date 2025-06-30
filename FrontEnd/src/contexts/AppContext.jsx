@@ -156,6 +156,7 @@ function parseJwt(token) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token')
   };
 
   const addMeme = (memeData) => {
@@ -195,7 +196,7 @@ const likeMeme = async (memeId) => {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/memes/likes/${memeId}`, {
+    const res = await fetch(`http://localhost:5000/api/meme/likes/${memeId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -210,7 +211,7 @@ const likeMeme = async (memeId) => {
     setMemes(prev =>
       prev.map(meme =>
         meme._id === memeId
-          ? { ...meme, likes: data.totalLikes }
+          ? { ...meme, likes: data.likes }
           : meme
       )
     );
@@ -222,8 +223,10 @@ const likeMeme = async (memeId) => {
   const getUserMemes = (userId) => {
     return memes.filter(meme => meme.uploaderId === userId);
   };
-
-  const fetchMemes = async () => {
+  const getMainMemes = (userId)=>{
+    return memes.filter(meme=>meme.uploaderId!==userId)
+  };
+ const fetchMemes = async () => {
   try {
     const token = localStorage.getItem('token');
     const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
@@ -243,11 +246,14 @@ const likeMeme = async (memeId) => {
       createdAt: meme.createdAt
     }));
 
-    setMemes(processedMemes);
+    // ✅ Return memes and dummy hasMore (you can make this dynamic later)
+    return { memes: processedMemes, hasMore: true };
   } catch (err) {
     console.error('Failed to fetch memes:', err);
+    return undefined;
   }
 };
+
 
 
   const loadMoreMemes = async () => {
@@ -262,16 +268,29 @@ const likeMeme = async (memeId) => {
   };
 
   // Initial load of memes
-  useEffect(() => {
-    if (memes.length === 0 && !isLoading) {
-      const loadInitialMemes = async () => {
-        const { memes: initialMemes, hasMore } = await fetchMemes(1);
+ useEffect(() => {
+  if (memes.length === 0 && !isLoading) {
+    const loadInitialMemes = async () => {
+      try {
+        const data = await fetchMemes(1);
+        console.log('Fetched data:', data);
+
+        if (!data || !data.memes) {
+          console.error('fetchMemes returned invalid structure:', data);
+          return;
+        }
+
+        const { memes: initialMemes, hasMore } = data;
         setMemes(initialMemes);
         setHasMoreMemes(hasMore);
-      };
-      loadInitialMemes();
-    }
-  }, [memes.length, isLoading]);
+      } catch (error) {
+        console.error('Error loading memes:', error);
+      }
+    };
+
+    loadInitialMemes();
+  }
+}, [memes.length, isLoading]);
 
   return (
     <AppContext.Provider value={{
@@ -291,7 +310,8 @@ const likeMeme = async (memeId) => {
       login,
       signup,
       logout,
-      getUserMemes
+      getUserMemes,
+      getMainMemes
     }}>
       {children}
     </AppContext.Provider>

@@ -4,10 +4,9 @@ import MemeCard from './MemeCard';
 import { ImageIcon } from 'lucide-react';
 
 const MemeFeed = () => {
-  const { memes, isDarkMode, loadMoreMemes, hasMoreMemes, isLoadingMore } = useAppContext();
+  const { user, isDarkMode,getMainMemes, loadMoreMemes, hasMoreMemes, isLoadingMore } = useAppContext();
   const observerRef = useRef();
   const loadingTriggerRef = useRef();
-
   // Intersection Observer for infinite scroll
   const lastMemeElementRef = useCallback((node) => {
     if (isLoadingMore) return;
@@ -33,8 +32,10 @@ const MemeFeed = () => {
       }
     };
   }, []);
+  const mainMemes = getMainMemes(user?.id || '');
 
-  if (memes.length === 0 && !isLoadingMore) {
+
+  if (mainMemes.length === 0 && !isLoadingMore) {
     return (
       <div className={`flex flex-col items-center justify-center py-16 transition-colors duration-500 ${
         isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -52,13 +53,13 @@ const MemeFeed = () => {
     <div className="space-y-8">
       {/* Memes Grid - 3 columns, 40% screen height */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {memes.map((meme, index) => {
+        {mainMemes.map((meme, index) => {
           // Add ref to the 9th meme (index 8) for infinite scroll trigger
           const isNinthMeme = (index + 1) % 15 === 9;
           
           return (
             <div
-              key={meme.id}
+              key={meme._id}
               ref={isNinthMeme ? lastMemeElementRef : null}
               className="h-[40vh] min-h-[300px]"
             >
@@ -87,7 +88,7 @@ const MemeFeed = () => {
       )}
 
       {/* End of content indicator */}
-      {!hasMoreMemes && memes.length > 0 && (
+      {!hasMoreMemes && mainMemes.length > 0 && (
         <div className={`text-center py-8 transition-colors duration-500 ${
           isDarkMode ? 'text-gray-400' : 'text-gray-500'
         }`}>
