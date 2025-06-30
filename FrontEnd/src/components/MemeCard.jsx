@@ -6,12 +6,41 @@ const MemeCard = ({ meme }) => {
   const { user, likeMeme, isDarkMode } = useAppContext();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [likeAnimation, setLikeAnimation] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [currentLikes, setCurrentLikes] = useState(meme.likes || 0);
 
-  const handleLike = () => {
-    if (!user) return;
+  const handleLike = async () => {
+    if (!user || isLiking) return;
+    
+    setIsLiking(true);
     setLikeAnimation(true);
-    setTimeout(() => setLikeAnimation(false), 600);
-    likeMeme(meme._id);
+    
+    // Store original likes count for potential rollback
+    const originalLikes = currentLikes;
+    
+    try {
+      // Optimistic update - assume like will succeed
+      setCurrentLikes(prev => prev + 1);
+      
+      // Call backend API
+      const updatedLikes = await likeMeme(meme._id);
+      
+      // Update with actual count from backend
+      if (typeof updatedLikes === 'number') {
+        setCurrentLikes(updatedLikes);
+      }
+      
+    } catch (error) {
+      console.error('Error liking meme:', error);
+      // Revert optimistic update on error
+      setCurrentLikes(originalLikes);
+      
+      // Show error message to user
+      alert('Failed to like meme. Please try again.');
+    } finally {
+      setIsLiking(false);
+      setTimeout(() => setLikeAnimation(false), 600);
+    }
   };
 
   const formatTimeAgo = (dateStr) => {
@@ -88,20 +117,19 @@ const MemeCard = ({ meme }) => {
           </div>
 
           {/* Like Button */}
-         <button
-  onClick={handleLike}
-  disabled={!user}
-  className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
-    isDarkMode
-      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-  }`}
->
-  <Heart
-    className={`w-4 h-4 ${meme.likes.includes(user?.id) ? 'text-red-500 fill-red-500' : ''}`}
-  />
-  <span className="text-sm font-medium">{meme.likes.length}</span>
-</button>
+          <button
+            onClick={handleLike}
+            disabled={!user || isLiking}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
+              isDarkMode
+                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-red-400'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-red-500'
+            }`}
+            title={!user ? 'Please login to like memes' : 'Like this meme'}
+          >
+            <Heart className={`w-4 h-4 ${isLiking ? 'animate-pulse' : ''}`} />
+            <span className="text-sm font-medium">{currentLikes}</span>
+          </button>
         </div>
       </div>
     </div>

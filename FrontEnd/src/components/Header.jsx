@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppContext } from '../contexts/AppContext';
-import { Smile, Upload, Moon, Sun, User, LogOut, Settings } from 'lucide-react';
+import { Smile, Upload, Moon, Sun, User, LogOut, Settings, Home } from 'lucide-react';
 
-const Header = ({ onUpload, onProfileClick }) => {
+const Header = () => {
   const { user, isDarkMode, toggleTheme, logout } = useAppContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     setShowUserMenu(false);
+    navigate('/');
   };
 
   return (
@@ -20,7 +24,7 @@ const Header = ({ onUpload, onProfileClick }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link to="/feed" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
               isDarkMode ? 'bg-purple-600' : 'bg-blue-500'
             }`}>
@@ -38,7 +42,26 @@ const Header = ({ onUpload, onProfileClick }) => {
                 Spread Smile, Happy Memeing
               </p>
             </div>
-          </div>
+          </Link>
+
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-4">
+            <Link
+              to="/feed"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 ${
+                location.pathname === '/feed'
+                  ? isDarkMode 
+                    ? 'bg-purple-600 text-white' 
+                    : 'bg-blue-500 text-white'
+                  : isDarkMode 
+                    ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              <span>Feed</span>
+            </Link>
+          </nav>
 
           {/* User Info & Actions */}
           <div className="flex items-center space-x-4">
@@ -56,8 +79,8 @@ const Header = ({ onUpload, onProfileClick }) => {
             </button>
 
             {/* Upload Button */}
-            <button
-              onClick={onUpload}
+            <Link
+              to="/upload"
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 ${
                 isDarkMode
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30'
@@ -66,7 +89,7 @@ const Header = ({ onUpload, onProfileClick }) => {
             >
               <Upload className="w-4 h-4" />
               <span className="hidden sm:inline">Upload Meme</span>
-            </button>
+            </Link>
 
             {/* User Profile Dropdown */}
             <div className="relative">
@@ -98,11 +121,9 @@ const Header = ({ onUpload, onProfileClick }) => {
                     : 'bg-white border-gray-200'
                 }`}>
                   <div className="py-2">
-                    <button
-                      onClick={() => {
-                        onProfileClick();
-                        setShowUserMenu(false);
-                      }}
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserMenu(false)}
                       className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-300 ${
                         isDarkMode 
                           ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
@@ -111,7 +132,7 @@ const Header = ({ onUpload, onProfileClick }) => {
                     >
                       <Settings className="w-4 h-4" />
                       <span>My Profile</span>
-                    </button>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-300 ${

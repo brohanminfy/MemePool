@@ -30,11 +30,13 @@ export const AppProvider = ({ children }) => {
 
     // Check for existing session
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const token = localStorage.getItem('token');
+    if (savedUser && token) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
     }
     setIsLoading(false);
@@ -50,113 +52,113 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('theme', 'light');
     }
   };
-function parseJwt(token) {
-  try {
-    return JSON.parse(atob(token.split('.')[1]));
-  } catch (e) {
-    console.error("Invalid JWT Token", e);
-    return {};
-  }
-}
-  const login = async (email, password) => {
-  setIsLoading(true);
 
-  try {
-    const res = await fetch('http://localhost:5000/api/verify/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Login failed');
+  function parseJwt(token) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+      console.error("Invalid JWT Token", e);
+      return {};
     }
-
-    // Extract token and set user info from token or backend if returned
-    const token = data.token;
-    const userInfo = parseJwt(token); // Optional: decode JWT to get user data
-
-    const newUser = {
-      id: userInfo.id,
-      username: userInfo.username,
-      email: userInfo.email,
-      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-      createdAt: new Date()
-    };
-
-    localStorage.setItem('token', token);         // Store JWT
-    localStorage.setItem('user', JSON.stringify(newUser)); // Store user info
-
-    setUser(newUser);
-    setIsLoading(false);
-    return true;
-
-  } catch (err) {
-    console.error('Login error:', err.message);
-    alert(err.message);
-    setIsLoading(false);
-    return false;
   }
-};
+
+  const login = async (email, password) => {
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/verify/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Extract token and set user info from token or backend if returned
+      const token = data.token;
+      const userInfo = parseJwt(token); // Optional: decode JWT to get user data
+
+      const newUser = {
+        id: userInfo.id,
+        username: userInfo.username,
+        email: userInfo.email,
+        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+        createdAt: new Date()
+      };
+
+      localStorage.setItem('token', token);         // Store JWT
+      localStorage.setItem('user', JSON.stringify(newUser)); // Store user info
+
+      setUser(newUser);
+      setIsLoading(false);
+      return true;
+
+    } catch (err) {
+      console.error('Login error:', err.message);
+      setIsLoading(false);
+      return false;
+    }
+  };
 
   const signup = async (username, email, password) => {
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const res = await fetch('http://localhost:5000/api/verify/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-        confirmpassword: password
-      })
-    });
+    try {
+      const res = await fetch('http://localhost:5000/api/verify/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          confirmpassword: password
+        })
+      });
 
-    const data = await res.json();
-    
-    if (!res.ok) {
-      throw new Error(data.error || 'Signup failed');
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Signup failed');
+      }
+
+      const token = data.token;
+      const userInfo = parseJwt(token); // Decode token
+
+      const newUser = {
+        id: userInfo.id,
+        username: userInfo.username || username,
+        email: userInfo.email,
+        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+        createdAt: new Date()
+      };
+
+      localStorage.setItem('token', token); // store JWT
+      localStorage.setItem('user', JSON.stringify(newUser));
+
+      setUser(newUser);
+      setIsLoading(false);
+      return true;
+
+    } catch (err) {
+      console.error('Signup error:', err.message);
+      setIsLoading(false);
+      return false;
     }
-
-    const token = data.token;
-    const userInfo = parseJwt(token); // Decode token
-
-    const newUser = {
-      id: userInfo.id,
-      username: userInfo.username || username,
-      email: userInfo.email,
-      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-      createdAt: new Date()
-    };
-
-    localStorage.setItem('token', token); // store JWT
-    localStorage.setItem('user', JSON.stringify(newUser));
-
-    setUser(newUser);
-    setIsLoading(false);
-    return true;
-
-  } catch (err) {
-    console.error('Signup error:', err.message);
-    alert(err.message);
-    setIsLoading(false);
-    return false;
-  }
-};
-
+  };
 
   const logout = () => {
     setUser(null);
+    setMemes([]);
     localStorage.removeItem('user');
-    localStorage.removeItem('token')
+    localStorage.removeItem('token');
   };
 
   const addMeme = (memeData) => {
@@ -170,7 +172,8 @@ function parseJwt(token) {
       likedBy: [],
       createdAt: new Date(),
     };
-    setMemes(prev => [newMeme, ...prev]);
+    // Don't add to memes array since we filter out user's own memes from feed
+    // setMemes(prev => [newMeme, ...prev]);
   };
 
   const updateMeme = (memeId, updates) => {
@@ -191,70 +194,106 @@ function parseJwt(token) {
       !(meme.id === memeId && meme.uploaderId === user.id)
     ));
   };
-const likeMeme = async (memeId) => {
-  if (!user) return;
 
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/meme/likes/${memeId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    });
+  const likeMeme = async (memeId) => {
+    if (!user) return;
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to like/unlike meme');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/meme/likes/${memeId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-    // Update likes count in state
-    setMemes(prev =>
-      prev.map(meme =>
-        meme._id === memeId
-          ? { ...meme, likes: data.likes }
-          : meme
-      )
-    );
-  } catch (err) {
-    console.error("Like/unlike failed:", err.message);
-  }
-};
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to like/unlike meme');
+
+      // Update likes count in state
+      setMemes(prev =>
+        prev.map(meme =>
+          meme._id === memeId
+            ? { ...meme, likes: data.totalLikes }
+            : meme
+        )
+      );
+
+      // Return the updated likes count for optimistic updates
+      return data.totalLikes;
+    } catch (err) {
+      console.error("Like/unlike failed:", err.message);
+      throw err; // Re-throw to handle in component
+    }
+  };
 
   const getUserMemes = (userId) => {
+    // For profile page, we need to fetch user's own memes separately
+    // This function will be used in ProfilePage to show user's own memes
     return memes.filter(meme => meme.uploaderId === userId);
   };
-  const getMainMemes = (userId)=>{
-    return memes.filter(meme=>meme.uploaderId!==userId)
+
+  const fetchMemes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const rawMemes = response.data.data;
+      const processedMemes = rawMemes.map(meme => ({
+        _id: meme._id,
+        imageUrl: meme.meme?.[0] || '',
+        caption: meme.caption || '',
+        uploader: meme.author?.username || 'Unknown',
+        uploaderId: meme.author?._id || '',
+        likes: Array.isArray(meme.likes) ? meme.likes.length : 0,
+        createdAt: meme.createdAt
+      }));
+
+      // Filter out current user's memes from the feed
+      const filteredMemes = user 
+        ? processedMemes.filter(meme => meme.uploaderId !== user.id)
+        : processedMemes;
+
+      setMemes(filteredMemes);
+    } catch (err) {
+      console.error('Failed to fetch memes:', err);
+    }
   };
- const fetchMemes = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
 
-    const rawMemes = response.data.data;
-    const processedMemes = rawMemes.map(meme => ({
-      _id: meme._id,
-      imageUrl: meme.meme?.[0] || '',
-      caption: meme.caption || '',
-      uploader: meme.author?.username || 'Unknown',
-      uploaderId: meme.author?._id || '',
-      likes: Array.isArray(meme.likes) ? meme.likes : [],
-      createdAt: meme.createdAt
-    }));
+  // Separate function to fetch user's own memes for profile page
+  const fetchUserMemes = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-    // ✅ Return memes and dummy hasMore (you can make this dynamic later)
-    return { memes: processedMemes, hasMore: true };
-  } catch (err) {
-    console.error('Failed to fetch memes:', err);
-    return undefined;
-  }
-};
+      const rawMemes = response.data.data;
+      const processedMemes = rawMemes.map(meme => ({
+        _id: meme._id,
+        id: meme._id, // Add id for compatibility
+        imageUrl: meme.meme?.[0] || '',
+        caption: meme.caption || '',
+        uploader: meme.author?.username || 'Unknown',
+        uploaderId: meme.author?._id || '',
+        likes: Array.isArray(meme.likes) ? meme.likes.length : 0,
+        createdAt: meme.createdAt
+      }));
 
-
+      // Return only current user's memes
+      return processedMemes.filter(meme => meme.uploaderId === userId);
+    } catch (err) {
+      console.error('Failed to fetch user memes:', err);
+      return [];
+    }
+  };
 
   const loadMoreMemes = async () => {
     if (isLoadingMore || !hasMoreMemes) return;
@@ -266,31 +305,6 @@ const likeMeme = async (memeId) => {
     setCurrentPage(nextPage);
     setHasMoreMemes(hasMore);
   };
-
-  // Initial load of memes
- useEffect(() => {
-  if (memes.length === 0 && !isLoading) {
-    const loadInitialMemes = async () => {
-      try {
-        const data = await fetchMemes(1);
-        console.log('Fetched data:', data);
-
-        if (!data || !data.memes) {
-          console.error('fetchMemes returned invalid structure:', data);
-          return;
-        }
-
-        const { memes: initialMemes, hasMore } = data;
-        setMemes(initialMemes);
-        setHasMoreMemes(hasMore);
-      } catch (error) {
-        console.error('Error loading memes:', error);
-      }
-    };
-
-    loadInitialMemes();
-  }
-}, [memes.length, isLoading]);
 
   return (
     <AppContext.Provider value={{
@@ -311,7 +325,8 @@ const likeMeme = async (memeId) => {
       signup,
       logout,
       getUserMemes,
-      getMainMemes
+      fetchMemes,
+      fetchUserMemes
     }}>
       {children}
     </AppContext.Provider>

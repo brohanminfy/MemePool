@@ -1,18 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import Header from './Header';
-import MemeFeed from './MemeFeed';
-import UploadModal from './UploadModal';
-import ProfilePage from './ProfilePage';
 
-const MainApp = () => {
+const Layout = ({ children }) => {
   const { isDarkMode } = useAppContext();
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-
-  if (showProfile) {
-    return <ProfilePage onBack={() => setShowProfile(false)} />;
-  }
 
   return (
     <div className={`min-h-screen transition-all duration-500 ${
@@ -20,19 +11,11 @@ const MainApp = () => {
         ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
         : 'bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50'
     }`}>
-      <Header 
-        onUpload={() => setIsUploadModalOpen(true)} 
-        onProfileClick={() => setShowProfile(true)}
-      />
+      <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <MemeFeed />
+        {children}
       </main>
-
-      <UploadModal 
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-      />
 
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -47,4 +30,4 @@ const MainApp = () => {
   );
 };
 
-export default MainApp;
+export default Layout;

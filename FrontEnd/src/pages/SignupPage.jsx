@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../contexts/AppContext';
-import { Smile, Mail, User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Smile, Mail, User, Lock, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
 
-const AuthPage = () => {
-  const { login, signup, isDarkMode, isLoading } = useAppContext();
-  const [isLoginMode, setIsLoginMode] = useState(true);
+const SignupPage = () => {
+  const { signup, isDarkMode, isLoading } = useAppContext();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -22,13 +23,8 @@ const AuthPage = () => {
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password) {
+    if (!formData.email || !formData.password || !formData.username) {
       setError('Please fill in all required fields');
-      return false;
-    }
-
-    if (!isLoginMode && !formData.username) {
-      setError('Username is required');
       return false;
     }
 
@@ -37,7 +33,7 @@ const AuthPage = () => {
       return false;
     }
 
-    if (!isLoginMode && formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return false;
     }
@@ -56,30 +52,15 @@ const AuthPage = () => {
     if (!validateForm()) return;
 
     try {
-      let success = false;
-      if (isLoginMode) {
-        success = await login(formData.email, formData.password);
+      const success = await signup(formData.username, formData.email, formData.password);
+      if (success) {
+        navigate('/feed');
       } else {
-        success = await signup(formData.username, formData.email, formData.password);
-      }
-
-      if (!success) {
-        setError(isLoginMode ? 'Invalid email or password' : 'Failed to create account');
+        setError('Failed to create account');
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');
     }
-  };
-
-  const toggleMode = () => {
-    setIsLoginMode(!isLoginMode);
-    setError('');
-    setFormData({
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
-    });
   };
 
   return (
@@ -103,6 +84,19 @@ const AuthPage = () => {
           ? 'bg-gray-800/80 border-gray-700 shadow-2xl shadow-purple-500/20' 
           : 'bg-white/80 border-white/50 shadow-2xl shadow-blue-500/20'
       }`}>
+        {/* Back Button */}
+        <Link 
+          to="/"
+          className={`inline-flex items-center space-x-2 mb-6 text-sm font-medium transition-all duration-300 hover:scale-105 ${
+            isDarkMode 
+              ? 'text-gray-300 hover:text-white' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Home</span>
+        </Link>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center transition-all duration-500 ${
@@ -113,12 +107,12 @@ const AuthPage = () => {
           <h1 className={`text-3xl font-bold mb-2 transition-colors duration-500 ${
             isDarkMode ? 'text-white' : 'text-gray-800'
           }`}>
-            {isLoginMode ? 'Welcome Back!' : 'Join MemeShare'}
+            Join MemeShare
           </h1>
           <p className={`transition-colors duration-500 ${
             isDarkMode ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            {isLoginMode ? 'Sign in to continue sharing memes' : 'Create an account to start sharing'}
+            Create an account to start sharing
           </p>
         </div>
 
@@ -136,26 +130,24 @@ const AuthPage = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {!isLoginMode && (
-            <div className="relative">
-              <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-500 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`} />
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:outline-none ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20' 
-                    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20'
-                }`}
-                required={!isLoginMode}
-              />
-            </div>
-          )}
+          <div className="relative">
+            <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-500 ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`} />
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleInputChange}
+              className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:outline-none ${
+                isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20' 
+                  : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20'
+              }`}
+              required
+            />
+          </div>
 
           <div className="relative">
             <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-500 ${
@@ -204,35 +196,33 @@ const AuthPage = () => {
             </button>
           </div>
 
-          {!isLoginMode && (
-            <div className="relative">
-              <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-500 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`} />
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className={`w-full pl-10 pr-12 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:outline-none ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20' 
-                    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20'
-                }`}
-                required={!isLoginMode}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-colors duration-300 ${
-                  isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4 pointer-events-none" /> : <Eye className="w-4 h-4 pointer-events-none" />}
-              </button>
-            </div>
-          )}
+          <div className="relative">
+            <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-500 ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`} />
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className={`w-full pl-10 pr-12 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:outline-none ${
+                isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20' 
+                  : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20'
+              }`}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-colors duration-300 ${
+                isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {showConfirmPassword ? <EyeOff className="w-4 h-4 pointer-events-none" /> : <Eye className="w-4 h-4 pointer-events-none" />}
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -246,10 +236,10 @@ const AuthPage = () => {
             {isLoading ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{isLoginMode ? 'Signing in...' : 'Creating account...'}</span>
+                <span>Creating account...</span>
               </div>
             ) : (
-              isLoginMode ? 'Sign In' : 'Create Account'
+              'Create Account'
             )}
           </button>
         </form>
@@ -258,17 +248,17 @@ const AuthPage = () => {
           <p className={`text-sm transition-colors duration-500 ${
             isDarkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            {isLoginMode ? "Don't have an account?" : 'Already have an account?'}
-            <button
-              onClick={toggleMode}
+            Already have an account?
+            <Link
+              to="/login"
               className={`ml-2 font-semibold transition-colors duration-300 ${
                 isDarkMode 
                   ? 'text-purple-400 hover:text-purple-300' 
                   : 'text-blue-600 hover:text-blue-700'
               }`}
             >
-              {isLoginMode ? 'Sign up' : 'Sign in'}
-            </button>
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
@@ -276,4 +266,4 @@ const AuthPage = () => {
   );
 };
 
-export default AuthPage;
+export default SignupPage;
