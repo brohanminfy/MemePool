@@ -4,9 +4,10 @@ import MemeCard from './MemeCard';
 import { ImageIcon } from 'lucide-react';
 
 const MemeFeed = () => {
-  const { user, isDarkMode,getMainMemes, loadMoreMemes, hasMoreMemes, isLoadingMore } = useAppContext();
+  const { memes, isDarkMode, loadMoreMemes, hasMoreMemes, isLoadingMore, user } = useAppContext();
   const observerRef = useRef();
   const loadingTriggerRef = useRef();
+
   // Intersection Observer for infinite scroll
   const lastMemeElementRef = useCallback((node) => {
     if (isLoadingMore) return;
@@ -32,18 +33,24 @@ const MemeFeed = () => {
       }
     };
   }, []);
-  const mainMemes = getMainMemes(user?.id || '');
 
+  // Filter out current user's memes from the feed (additional client-side filtering)
+  const feedMemes = user 
+    ? memes.filter(meme => meme.uploaderId !== user.id)
+    : memes;
 
-  if (mainMemes.length === 0 && !isLoadingMore) {
+  if (feedMemes.length === 0 && !isLoadingMore) {
     return (
       <div className={`flex flex-col items-center justify-center py-16 transition-colors duration-500 ${
         isDarkMode ? 'text-gray-400' : 'text-gray-500'
       }`}>
         <ImageIcon className="w-16 h-16 mb-4 opacity-50" />
-        <h3 className="text-xl font-semibold mb-2">No memes yet!</h3>
+        <h3 className="text-xl font-semibold mb-2">No memes to show!</h3>
         <p className="text-center max-w-md">
-          Be the first to share a meme and get the fun started. Click the upload button to add your first meme!
+          {user 
+            ? "There are no memes from other users yet. Check back later or encourage others to share their memes!"
+            : "Be the first to share a meme and get the fun started. Click the upload button to add your first meme!"
+          }
         </p>
       </div>
     );
@@ -51,15 +58,16 @@ const MemeFeed = () => {
 
   return (
     <div className="space-y-8">
+
       {/* Memes Grid - 3 columns, 40% screen height */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mainMemes.map((meme, index) => {
+        {feedMemes.map((meme, index) => {
           // Add ref to the 9th meme (index 8) for infinite scroll trigger
           const isNinthMeme = (index + 1) % 15 === 9;
           
           return (
             <div
-              key={meme._id}
+              key={meme._id || meme.id}
               ref={isNinthMeme ? lastMemeElementRef : null}
               className="h-[40vh] min-h-[300px]"
             >
@@ -88,11 +96,12 @@ const MemeFeed = () => {
       )}
 
       {/* End of content indicator */}
-      {!hasMoreMemes && mainMemes.length > 0 && (
+      {!hasMoreMemes && feedMemes.length > 0 && (
         <div className={`text-center py-8 transition-colors duration-500 ${
           isDarkMode ? 'text-gray-400' : 'text-gray-500'
         }`}>
-          <p className="text-sm">You've seen all the memes! 🎉</p>
+          <p className="text-sm">You've seen all the community memes! 🎉</p>
+          <p className="text-xs mt-1">Upload your own memes to contribute to the community!</p>
         </div>
       )}
     </div>
