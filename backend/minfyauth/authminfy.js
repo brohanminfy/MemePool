@@ -1,29 +1,31 @@
+const authminfy = async (req, res, next) => {
+  try {
+    const minfyEmails = [
+      "boddupally.rohan@minfytech.com",
+      "midhilesh.polisetty@minfytech.com",
+      "voma.sreeja@minfytech.com",
+      "rakesh.ravi@minfytech.com",
+      "example@minfytech.com",
+      "New@gamil.com"
+    ];
 
+    const { email } = req.body;
 
+    const isVerified = minfyEmails.some(
+      (e) => e.trim().toLowerCase() === email.trim().toLowerCase()
+    );
 
-const authminfy = async (req,res,next)=>{
-    try{
-        const minfyemail = [
-"boddupally.rohan@minfytech.com",
-"midhilesh.polisetty@minfytech.com",
-"voma.sreeja@minfytech.com",
-"rakesh.ravi@minfytech.com"
-]
-const {email} = req.body
-console.log(email)
-
-minfyemail.forEach(element => {
-    if(element.trim().toLowerCase().toString()===email.trim().toLowerCase().toString()){
-        console.log("Verified")
-        next()
+    if (isVerified) {
+      console.log("Verified");
+      return next(); // Allow request to proceed
     }
-});
-console.log("Not verified")
 
+    return res.status(400).json({ success: false, error: "User not verified" });
 
+  } catch (e) {
+    console.error("authminfy error:", e);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};
 
-    }catch(e){
-        return res.status(500).json({"success":false,"message":"Server error"})
-    }
-}
-export default authminfy
+export default authminfy;

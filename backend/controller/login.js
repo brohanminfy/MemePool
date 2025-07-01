@@ -14,15 +14,15 @@ const login = async (req,res)=>{
    try{ const {email,password} = req.body
     const validate = loginValidate.safeParse({email,password})
     if(!validate.success){
-       return res.status(400).json({message:"zod"})
+       return res.status(400).json({error:"Input format error"})
     }
     const user = await usermodel.findOne({email})
     if(!user){
-        return res.status(400).json({message:"User not found"})
+        return res.status(400).json({error:"User not found signUp"})
     }
     const matchPassword = await bcrypt.compare(password,user.password)
     if(!matchPassword){
-        return res.status(400).json({message:"Invalid creds"})
+        return res.status(400).json({error:"Invalid creds"})
     }
     const token = jwt.sign(
         {id:user._id,
@@ -36,7 +36,7 @@ const login = async (req,res)=>{
         token
     })
 }catch(e){
-        res.status(500).json({message:"Internal Server error"})
+        res.status(500).json({error:"Internal Server error"})
         console.log(e)
     }
 }

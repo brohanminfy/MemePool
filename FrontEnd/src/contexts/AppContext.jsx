@@ -62,97 +62,95 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  const login = async (email, password) => {
-    setIsLoading(true);
+ const login = async (email, password) => {
+  // setIsLoading(true);
 
-    try {
-      const res = await fetch('http://localhost:5000/api/verify/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+  try {
+    const res = await fetch('http://localhost:5000/api/verify/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
 
-      const data = await res.json();
+    const data = await res.json();
+    console.log(data);
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-
-      // Extract token and set user info from token or backend if returned
-      const token = data.token;
-      const userInfo = parseJwt(token); // Optional: decode JWT to get user data
-
-      const newUser = {
-        id: userInfo.id,
-        username: userInfo.username,
-        email: userInfo.email,
-        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-        createdAt: new Date()
-      };
-
-      localStorage.setItem('token', token);         // Store JWT
-      localStorage.setItem('user', JSON.stringify(newUser)); // Store user info
-
-      setUser(newUser);
-      setIsLoading(false);
-      return true;
-
-    } catch (err) {
-      console.error('Login error:', err.message);
-      setIsLoading(false);
-      return false;
+    if (!res.ok) {
+      console.log(data.error);
+      // setIsLoading(false)
+      return { success: false, message: data.error || 'Login failed' };
     }
-  };
+
+    const token = data.token;
+    const userInfo = parseJwt(token);
+
+    const newUser = {
+      id: userInfo.id,
+      username: userInfo.username,
+      email: userInfo.email,
+      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+      createdAt: new Date()
+    };
+
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setUser(newUser);
+    // setIsLoading(false);
+    return { success: true };
+
+  } catch (err) {
+    console.error('Login error:', err.message);
+    setIsLoading(false);
+    return { success: false, message: err.message || 'Something went wrong' }; 
+  }
+};
+
 
   const signup = async (username, email, password) => {
-    setIsLoading(true);
+  try {
+    const res = await fetch('http://localhost:5000/api/verify/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+        confirmpassword: password
+      })
+    });
 
-    try {
-      const res = await fetch('http://localhost:5000/api/verify/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          confirmpassword: password
-        })
-      });
+    const data = await res.json();
 
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Signup failed');
-      }
-
-      const token = data.token;
-      const userInfo = parseJwt(token); // Decode token
-
-      const newUser = {
-        id: userInfo.id,
-        username: userInfo.username || username,
-        email: userInfo.email,
-        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-        createdAt: new Date()
-      };
-
-      localStorage.setItem('token', token); // store JWT
-      localStorage.setItem('user', JSON.stringify(newUser));
-
-      setUser(newUser);
-      setIsLoading(false);
-      return true;
-
-    } catch (err) {
-      console.error('Signup error:', err.message);
-      setIsLoading(false);
-      return false;
+    if (!res.ok) {
+      return { success: false, message: data.error || 'Signup failed' };
     }
-  };
+
+    const token = data.token;
+    const userInfo = parseJwt(token); // Decode token
+
+    const newUser = {
+      id: userInfo.id,
+      username: userInfo.username || username,
+      email: userInfo.email,
+      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+      createdAt: new Date()
+    };
+
+    localStorage.setItem('token', token); // Store JWT
+    localStorage.setItem('user', JSON.stringify(newUser));
+
+    setUser(newUser);
+
+    return { success: true };
+  } catch (err) {
+    console.error('Signup error:', err.message);
+    return { success: false, message: err.message || 'Something went wrong' };
+  }
+};
 
   const logout = () => {
     setUser(null);

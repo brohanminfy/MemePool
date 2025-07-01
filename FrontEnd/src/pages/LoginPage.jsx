@@ -4,7 +4,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { Smile, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const LoginPage = () => {
-  const { login, isDarkMode, isLoading } = useAppContext();
+  const { login, isDarkMode,isLoading } = useAppContext();
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
@@ -13,13 +13,15 @@ const LoginPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [localLoading,setLocalLoading ] = useState(false);
+  
 
   const from = location.state?.from?.pathname || '/feed';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (error) setError('');
+    // if (error) setError('');
   };
 
   const validateForm = () => {
@@ -43,20 +45,25 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    try {
-      const success = await login(formData.email, formData.password);
-      if (success) {
-        navigate(from, { replace: true });
-      } else {
-        setError('Invalid email or password');
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
+  try {
+    setLocalLoading(true);
+    const { success, message } = await login(formData.email, formData.password);
+    setLocalLoading(false);
+
+    if (success) {
+      navigate(from, { replace: true });
+    } else {
+      console.log("Error received from login:", message); 
+      setError(message); // ✅ Set error from backend
     }
-  };
+  } catch (err) {
+    setError('Something went wrong. Please try again.');
+  }
+};
+
 
   return (
     <div className={`min-h-screen flex items-center justify-center transition-all duration-500 ${
@@ -112,17 +119,12 @@ const LoginPage = () => {
         </div>
 
         {/* Error Message */}
-        {error && (
-          <div className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${
-            isDarkMode ? 'bg-red-900/50 border border-red-700' : 'bg-red-50 border border-red-200'
-          }`}>
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>
-              {error}
-            </p>
-          </div>
-        )}
-
+ {error && (
+  <div className="mb-6 p-4 bg-red-100 border border-red-300 text-red-700 rounded">
+    <AlertCircle className="w-5 h-5 inline mr-2" />
+    {error}
+  </div>
+)}
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
@@ -174,14 +176,14 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={localLoading}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
               isDarkMode
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30'
                 : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg shadow-blue-500/30'
             }`}
           >
-            {isLoading ? (
+            {localLoading ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 <span>Signing in...</span>
