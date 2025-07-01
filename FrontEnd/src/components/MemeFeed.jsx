@@ -63,7 +63,7 @@ const MemeFeed = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {feedMemes.map((meme, index) => {
           const isNinthMeme = (index + 1) % 15 === 9;
-          
+          // console.log(meme)
           return (
             <div
               key={meme._id || meme.id}

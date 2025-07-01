@@ -12,7 +12,11 @@ const MemeCard = ({ meme }) => {
   // ✅ Determine if current user has already liked
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const currentUserId = currentUser?.id;
-  const [hasLiked, setHasLiked] = useState(() => meme.likesArray.includes(currentUserId));
+  // console.log(currentUserId)
+const [hasLiked, setHasLiked] = useState(() =>
+  meme.likesArray.some(user => user._id === currentUserId)
+);
+  // console.log(hasLiked)
 
   const handleLike = async () => {
     if (!user || isLiking) return;
