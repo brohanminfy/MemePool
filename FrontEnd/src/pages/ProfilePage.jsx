@@ -153,13 +153,7 @@ const ProfilePage = () => {
                   
                   {/* Action Buttons Overlay */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
-                    <button
-                      onClick={() => setEditingMeme(meme)}
-                      className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-300 transform hover:scale-110"
-                      title="Edit meme"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
+                   
                     <button
                       onClick={() => setShowDeleteConfirm(meme.id || meme._id)}
                       className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-300 transform hover:scale-110"

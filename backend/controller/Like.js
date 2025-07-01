@@ -17,7 +17,7 @@ const likeMeme = async (req,res)=>{
        const liked =  meme.likes.includes(user.id)
        if(liked){
         meme.likes = meme.likes.filter((id)=>{
-                return id!==user.id
+                return id.toString()!==user.id.toString()
         })
        }
        else{

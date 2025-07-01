@@ -62,7 +62,6 @@ const MemeFeed = () => {
       {/* Memes Grid - 3 columns, 40% screen height */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {feedMemes.map((meme, index) => {
-          // Add ref to the 9th meme (index 8) for infinite scroll trigger
           const isNinthMeme = (index + 1) % 15 === 9;
           
           return (

@@ -4,6 +4,8 @@ import connectDB from './config/db.js';
 import mrouter from './Router/MemeRouter.js';
 import urouter from './Router/UserRouter.js'
 import cors from 'cors';
+import authminfy from './minfyauth/authminfy.js';
+import auth from './authentication/auth.js';
 
 
 dotenv.config();

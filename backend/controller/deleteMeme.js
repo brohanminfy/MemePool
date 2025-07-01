@@ -7,8 +7,6 @@ const deleteMeme = async (req,res)=>{
         
         const meme = await mememodel.findById(memeId)
 
-        console.log(meme)
-        console.log(userId)
         
         if(!meme){
             return res.status(404).json({"success":false,"Error":"Meme not found"})

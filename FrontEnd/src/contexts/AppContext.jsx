@@ -187,19 +187,42 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  const deleteMeme = (memeId) => {
-    if (!user) return;
-    
-    setMemes(prev => prev.filter(meme => 
-      !(meme.id === memeId && meme.uploaderId === user.id)
-    ));
-  };
+const deleteMeme = async (memeId) => {
+  if (!user) return;
+
+  try {
+   const token = localStorage.getItem('token');
+    const res = await fetch(`http://localhost:5000/api/meme/delete/${memeId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`, // assuming JWT token
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Frontend state update
+      setMemes(prev => prev.filter(meme => meme.id !== memeId));
+      console.log(data.message); // optional: toast or alert
+    } else {
+      console.error(data.error || data.Message);
+      // Optional: toast.error(data.error || data.Message);
+    }
+  } catch (err) {
+    console.error("Error deleting meme:", err);
+    // Optional: toast.error("Something went wrong");
+  }
+};
+
 
   const likeMeme = async (memeId) => {
     if (!user) return;
 
     try {
       const token = localStorage.getItem('token');
+      console.log("Token being sent:", user.token);
       const res = await fetch(`http://localhost:5000/api/meme/likes/${memeId}`, {
         method: 'PUT',
         headers: {
