@@ -1,13 +1,28 @@
 const authminfy = async (req, res, next) => {
   try {
     const minfyEmails = [
-      "boddupally.rohan@minfytech.com",
-      "midhilesh.polisetty@minfytech.com",
-      "voma.sreeja@minfytech.com",
-      "rakesh.ravi@minfytech.com",
-      "example@minfytech.com",
-      "New@gamil.com"
-    ];
+  "shybash.shaik@minfytech.com",
+  "voma.sreeja@minfytech.com",
+  "venkata.kowshik@minfytech.com",
+  "javvadi.tanmaie@minfytech.com",
+  "avanish.kumar@minfytech.com",
+  "amaan.ahmed@minfytech.com",
+  "mahak.yadav@minfytech.com",
+  "shivam.pandey@gmail.com",
+  "boddupally.rohan@minfytech.com",
+  "akankssha.adepu@minfytech.com",
+  "rakesh.ravi@minfytech.com",
+  "keerthi.kelam@minfytech.com",
+  "siva.nithin@minfytech.com",
+  "akash.kumar@minfytech.com",
+  "uzaif.ali@minfytech.com",
+  "Livanshu.saini@minfytech.com",
+  "himaghna.das@minfytech.com",
+  "Charishma.gajula@minfytech.com",
+  "om.raj@minfytech.com",
+  "midhilesh.polisetty@minfytech.com"
+];
+
 
     const { email } = req.body;
 
