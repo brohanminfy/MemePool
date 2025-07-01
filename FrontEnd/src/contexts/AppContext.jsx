@@ -101,6 +101,7 @@ export const AppProvider = ({ children }) => {
 
     } catch (err) {
       console.error('Login error:', err.message);
+      
       setIsLoading(false);
       return false;
     }

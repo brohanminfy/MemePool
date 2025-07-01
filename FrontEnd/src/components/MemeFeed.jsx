@@ -68,7 +68,7 @@ const MemeFeed = () => {
             <div
               key={meme._id || meme.id}
               ref={isNinthMeme ? lastMemeElementRef : null}
-              className="h-[40vh] min-h-[300px]"
+              // className="h-[40vh] min-h-[300px]"
             >
               <MemeCard meme={meme} />
             </div>
