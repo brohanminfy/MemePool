@@ -272,6 +272,7 @@ const deleteMeme = async (memeId) => {
         uploader: meme.author?.username || 'Unknown',
         uploaderId: meme.author?._id || '',
         likes: Array.isArray(meme.likes) ? meme.likes.length : 0,
+        likesArray:meme.likes,
         createdAt: meme.createdAt
       }));
 
