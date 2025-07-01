@@ -61,14 +61,14 @@ const [hasLiked, setHasLiked] = useState(() =>
 
   return (
     <div
-      className={`group rounded-lg overflow-hidden max-w-xs mx-auto text-sm transition-all duration-300 hover:scale-[1.015] hover:-translate-y-1 ${
+      className={`group rounded-lg overflow-hidden max-w-50 mx-auto text-sm transition-all duration-300 hover:scale-[1.015] hover:-translate-y-1 ${
         isDarkMode
           ? 'bg-gray-700 shadow-md shadow-gray-900/40 hover:shadow-xl hover:shadow-purple-500/20'
           : 'bg-white shadow-md shadow-gray-200/40 hover:shadow-xl hover:shadow-blue-500/20'
       }`}
     >
       {/* Image */}
-      <div className="relative aspect-[4/5] bg-gray-200 dark:bg-gray-700 overflow-hidden">
+      <div className="relative aspect-[4/5] p-1 bg-gray-200 dark:bg-gray-700 overflow-hidden">
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div

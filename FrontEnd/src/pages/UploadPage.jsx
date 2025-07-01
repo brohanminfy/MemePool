@@ -239,7 +239,7 @@ const UploadPage = () => {
             <label className={`block text-lg font-semibold mb-4 transition-colors duration-500 ${
               isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
-              Caption (Optional)
+              Caption 
             </label>
             <textarea
               value={caption}
