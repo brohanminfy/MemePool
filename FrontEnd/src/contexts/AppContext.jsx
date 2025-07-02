@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import dotenv from 'dotenv';
 
 const AppContext = createContext(undefined);
 
@@ -66,7 +67,7 @@ export const AppProvider = ({ children }) => {
   // setIsLoading(true);
 
   try {
-    const res = await fetch('http://localhost:5000/api/verify/login', {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -110,7 +111,7 @@ export const AppProvider = ({ children }) => {
 
   const signup = async (username, email, password) => {
   try {
-    const res = await fetch('http://localhost:5000/api/verify/signup', {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -190,7 +191,7 @@ const deleteMeme = async (memeId) => {
 
   try {
    const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/meme/delete/${memeId}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/meme/delete/${memeId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`, // assuming JWT token
@@ -215,13 +216,13 @@ const deleteMeme = async (memeId) => {
 };
 
 
-  const likeMeme = async (memeId) => {
+    const likeMeme = async (memeId) => {
     if (!user) return;
 
     try {
       const token = localStorage.getItem('token');
       console.log("Token being sent:", user.token);
-      const res = await fetch(`http://localhost:5000/api/meme/likes/${memeId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/meme/likes/${memeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -249,6 +250,7 @@ const deleteMeme = async (memeId) => {
     }
   };
 
+
   const getUserMemes = (userId) => {
     // For profile page, we need to fetch user's own memes separately
     // This function will be used in ProfilePage to show user's own memes
@@ -258,7 +260,7 @@ const deleteMeme = async (memeId) => {
   const fetchMemes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/meme/getmeme`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -291,7 +293,7 @@ const deleteMeme = async (memeId) => {
   const fetchUserMemes = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/meme/getmeme', {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/meme/getmeme`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

@@ -29,6 +29,7 @@ const [hasLiked, setHasLiked] = useState(() =>
 
     try {
       // Optimistic update
+      
       setCurrentLikes(prev => originalLiked ? prev - 1 : prev + 1);
       setHasLiked(!originalLiked);
 
