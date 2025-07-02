@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import dotenv from 'dotenv';
 
 const AppContext = createContext(undefined);
 
@@ -43,6 +42,13 @@ export const AppProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
+  // Fetch memes when user logs in
+  useEffect(() => {
+    if (user && memes.length === 0) {
+      fetchMemes(1, 12, false); // Initial load, not load more
+    }
+  }, [user]);
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     if (!isDarkMode) {
@@ -63,99 +69,95 @@ export const AppProvider = ({ children }) => {
     }
   }
 
- const login = async (email, password) => {
-  // setIsLoading(true);
+  const login = async (email, password) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
+      const data = await res.json();
 
-    const data = await res.json();
-    console.log(data);
+      if (!res.ok) {
+        console.log(data.error);
+        return { success: false, message: data.error || 'Login failed' };
+      }
 
-    if (!res.ok) {
-      console.log(data.error);
-      // setIsLoading(false)
-      return { success: false, message: data.error || 'Login failed' };
+      const token = data.token;
+      const userInfo = parseJwt(token);
+
+      const newUser = {
+        id: userInfo.id,
+        username: userInfo.username,
+        email: userInfo.email,
+        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+        createdAt: new Date()
+      };
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
+      return { success: true };
+
+    } catch (err) {
+      console.error('Login error:', err.message);
+      setIsLoading(false);
+      return { success: false, message: err.message || 'Something went wrong' }; 
     }
-
-    const token = data.token;
-    const userInfo = parseJwt(token);
-
-    const newUser = {
-      id: userInfo.id,
-      username: userInfo.username,
-      email: userInfo.email,
-      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-      createdAt: new Date()
-    };
-
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setUser(newUser);
-    // setIsLoading(false);
-    return { success: true };
-
-  } catch (err) {
-    console.error('Login error:', err.message);
-    setIsLoading(false);
-    return { success: false, message: err.message || 'Something went wrong' }; 
-  }
-};
-
+  };
 
   const signup = async (username, email, password) => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-        confirmpassword: password
-      })
-    });
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          confirmpassword: password
+        })
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      return { success: false, message: data.error || 'Signup failed' };
+      if (!res.ok) {
+        return { success: false, message: data.error || 'Signup failed' };
+      }
+
+      const token = data.token;
+      const userInfo = parseJwt(token);
+
+      const newUser = {
+        id: userInfo.id,
+        username: userInfo.username || username,
+        email: userInfo.email,
+        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+        createdAt: new Date()
+      };
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(newUser));
+
+      setUser(newUser);
+
+      return { success: true };
+    } catch (err) {
+      console.error('Signup error:', err.message);
+      return { success: false, message: err.message || 'Something went wrong' };
     }
-
-    const token = data.token;
-    const userInfo = parseJwt(token); // Decode token
-
-    const newUser = {
-      id: userInfo.id,
-      username: userInfo.username || username,
-      email: userInfo.email,
-      avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-      createdAt: new Date()
-    };
-
-    localStorage.setItem('token', token); // Store JWT
-    localStorage.setItem('user', JSON.stringify(newUser));
-
-    setUser(newUser);
-
-    return { success: true };
-  } catch (err) {
-    console.error('Signup error:', err.message);
-    return { success: false, message: err.message || 'Something went wrong' };
-  }
-};
+  };
 
   const logout = () => {
     setUser(null);
     setMemes([]);
+    setCurrentPage(1);
+    setHasMoreMemes(true);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
   };
@@ -172,7 +174,6 @@ export const AppProvider = ({ children }) => {
       createdAt: new Date(),
     };
     // Don't add to memes array since we filter out user's own memes from feed
-    // setMemes(prev => [newMeme, ...prev]);
   };
 
   const updateMeme = (memeId, updates) => {
@@ -186,42 +187,37 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-const deleteMeme = async (memeId) => {
-  if (!user) return;
-
-  try {
-   const token = localStorage.getItem('token');
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/meme/delete/${memeId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`, // assuming JWT token
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      // Frontend state update
-      setMemes(prev => prev.filter(meme => meme.id !== memeId));
-      console.log(data.message); // optional: toast or alert
-    } else {
-      console.error(data.error || data.Message);
-      // Optional: toast.error(data.error || data.Message);
-    }
-  } catch (err) {
-    console.error("Error deleting meme:", err);
-    // Optional: toast.error("Something went wrong");
-  }
-};
-
-
-    const likeMeme = async (memeId) => {
+  const deleteMeme = async (memeId) => {
     if (!user) return;
 
     try {
       const token = localStorage.getItem('token');
-      console.log("Token being sent:", user.token);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/meme/delete/${memeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Frontend state update
+        setMemes(prev => prev.filter(meme => meme.id !== memeId));
+      } else {
+        console.error(data.error || data.Message);
+      }
+    } catch (err) {
+      console.error("Error deleting meme:", err);
+    }
+  };
+
+  const likeMeme = async (memeId) => {
+    if (!user) return;
+
+    try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/meme/likes/${memeId}`, {
         method: 'PUT',
         headers: {
@@ -246,27 +242,45 @@ const deleteMeme = async (memeId) => {
       return data.totalLikes;
     } catch (err) {
       console.error("Like/unlike failed:", err.message);
-      throw err; // Re-throw to handle in component
+      throw err;
     }
   };
 
-
   const getUserMemes = (userId) => {
-    // For profile page, we need to fetch user's own memes separately
-    // This function will be used in ProfilePage to show user's own memes
     return memes.filter(meme => meme.uploaderId === userId);
   };
 
-  const fetchMemes = async () => {
+  // Helper function to remove duplicates based on _id
+  const removeDuplicateMemes = (memesArray) => {
+    const seen = new Set();
+    return memesArray.filter(meme => {
+      const memeId = meme._id || meme.id;
+      if (seen.has(memeId)) {
+        return false;
+      }
+      seen.add(memeId);
+      return true;
+    });
+  };
+
+  // FIXED: fetchMemes function with proper pagination
+  const fetchMemes = async (page = 1, limit = 10, isLoadMore = false) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/meme/getmeme`, {
         headers: {
           Authorization: `Bearer ${token}`
+        },
+        params: {
+          page,
+          limit
         }
       });
 
-      const rawMemes = response.data.data;
+      const rawMemes = response.data.data || [];
+      const totalMemes = response.data.total || rawMemes.length;
+      const totalPages = response.data.totalPages || Math.ceil(totalMemes / limit);
+      
       const processedMemes = rawMemes.map(meme => ({
         _id: meme._id,
         imageUrl: meme.meme?.[0] || '',
@@ -274,7 +288,7 @@ const deleteMeme = async (memeId) => {
         uploader: meme.author?.username || 'Unknown',
         uploaderId: meme.author?._id || '',
         likes: Array.isArray(meme.likes) ? meme.likes.length : 0,
-        likesArray:meme.likes,
+        likesArray: meme.likes,
         createdAt: meme.createdAt
       }));
 
@@ -282,10 +296,23 @@ const deleteMeme = async (memeId) => {
       const filteredMemes = user 
         ? processedMemes.filter(meme => meme.uploaderId !== user.id)
         : processedMemes;
+      // Only update state if this is the initial load (page 1)
+      // For pagination, let loadMoreMemes handle the state update
+      if (page === 1 && !isLoadMore) {
+        setMemes(filteredMemes);
+        setCurrentPage(1);
+        setHasMoreMemes(page < totalPages);
+      }
 
-      setMemes(filteredMemes);
+      return {
+        memes: filteredMemes,
+        hasMore: page < totalPages,
+        totalPages,
+        currentPage: page
+      };
     } catch (err) {
-      console.error('Failed to fetch memes:', err);
+      console.error('❌ Failed to fetch memes:', err);
+      return { memes: [], hasMore: false, totalPages: 1, currentPage: page };
     }
   };
 
@@ -302,7 +329,7 @@ const deleteMeme = async (memeId) => {
       const rawMemes = response.data.data;
       const processedMemes = rawMemes.map(meme => ({
         _id: meme._id,
-        id: meme._id, // Add id for compatibility
+        id: meme._id,
         imageUrl: meme.meme?.[0] || '',
         caption: meme.caption || '',
         uploader: meme.author?.username || 'Unknown',
@@ -319,15 +346,34 @@ const deleteMeme = async (memeId) => {
     }
   };
 
+  // FIXED: loadMoreMemes function with duplicate prevention and better debugging
   const loadMoreMemes = async () => {
-    if (isLoadingMore || !hasMoreMemes) return;
+
+    if (isLoadingMore || !hasMoreMemes) {
+      return;
+    }
     
-    const nextPage = currentPage + 1;
-    const { memes: newMemes, hasMore } = await fetchMemes(nextPage);
-    
-    setMemes(prev => [...prev, ...newMemes]);
-    setCurrentPage(nextPage);
-    setHasMoreMemes(hasMore);
+    setIsLoadingMore(true);    
+    try {
+      const nextPage = currentPage + 1;
+      
+      const result = await fetchMemes(nextPage);
+      
+      // Merge new memes with existing ones and remove duplicates
+      setMemes(prev => {
+        const combined = [...prev, ...result.memes];
+        const deduplicated = removeDuplicateMemes(combined);
+        return deduplicated;
+      });
+      
+      setCurrentPage(nextPage);
+      setHasMoreMemes(result.hasMore);
+      
+    } catch (error) {
+      console.error('❌ Error loading more memes:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   return (
