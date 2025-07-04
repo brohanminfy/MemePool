@@ -1,0 +1,19 @@
+services:
+  frontend:
+    build: ./FrontEnd
+    env_file:
+      ./FrontEnd/env
+    ports:
+      - 80:80
+    depends_on: 
+      - backend
+  backend:
+    build: ./backend
+    ports:
+      - 81:5000
+    env_file:
+      - ./backend/env
+    
+ 
+     
+    
