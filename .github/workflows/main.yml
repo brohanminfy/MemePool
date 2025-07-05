@@ -15,7 +15,6 @@ jobs:
     steps:
       - name: copying files
         uses: actions/checkout@v2
-      - name: creating .env
         run: |
           echo VITE_API_BASE_URL=$VITE_API_BASE_URL > ./MemePool/FrontEnd/.env
           
