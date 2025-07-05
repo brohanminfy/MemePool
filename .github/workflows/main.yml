@@ -15,23 +15,24 @@ jobs:
     steps:
       - name: copying files
         uses: actions/checkout@v2
+      - name: creating .env
         run: |
-          echo VITE_API_BASE_URL=$VITE_API_BASE_URL > ./MemePool/FrontEnd/.env
+          echo VITE_API_BASE_URL=$VITE_API_BASE_URL > ./FrontEnd/.env
           
-          echo PORT=$PORT > ./MemePool/backend/.env
-          echo MONGODB_URI=$MONGODB_URI >> ./MemePool/backend/.env
-          echo CLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME >> ./MemePool/backend/.env
-          echo CLOUDINARY_API_KEY=$CLOUDINARY_API_KEY >> ./MemePool/backend/.env
-          echo CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET >> ./MemePool/backend/.en
-          echo JWT_SECRET=$JWT_SECRET >> ./MemePool/backend/.env
+          echo PORT=$PORT > ./backend/.env
+          echo MONGODB_URI=$MONGODB_URI >> ./backend/.env
+          echo CLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME >> ./backend/.env
+          echo CLOUDINARY_API_KEY=$CLOUDINARY_API_KEY >> ./backend/.env
+          echo CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET >> ./backend/.env
+          echo JWT_SECRET=$JWT_SECRET >> ./backend/.env
       - name: ssh into ec2
         uses: appleboy/scp-action@v1
         with:
            host: ${{ secrets.HOST }}
            username:  ${{ secrets.USERNAME }}
            key: ${{ secrets.KEY }}
-           source: ./MemePool
-           target: /home/ubuntu/
+           source: .
+           target: /home/ubuntu/MemePool
       - name: Run Docker Compose on EC2
         uses: appleboy/ssh-action@v1
         with:
@@ -40,6 +41,6 @@ jobs:
            key: ${{ secrets.KEY }}
            script: |
              cd /home/ubuntu/MemePool
-             docker-compose up  
+             docker-compose up  -d
       
         
