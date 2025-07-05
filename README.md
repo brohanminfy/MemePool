@@ -27,3 +27,31 @@ cd ../frontend
 bun i
 bun run dev
 ```
+
+
+
+# pipleline README
+
+This repository contains an automated CI/CD pipeline using **GitHub Actions** to deploy the `MemePool` project (Frontend + Backend + MongoDB) to an **Ubuntu EC2 server** via **Docker Compose**.
+
+---
+
+##  What This Pipeline Does
+
+ On manual trigger:
+- Builds env files from GitHub Secrets  
+- Uploads code to EC2 (`/home/ubuntu/MemePool`)  
+- Runs `docker-compose up` remotely to build and deploy containers  
+
+---
+
+##  Prerequisites
+
+### 1.  EC2 Server Setup
+
+Ensure your EC2 instance has the following installed:
+
+```bash
+sudo apt update
+sudo apt install docker.io -y
+sudo apt install docker-compose -y
