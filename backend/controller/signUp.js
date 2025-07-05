@@ -22,12 +22,13 @@ const signUpValidation = z.object({
 const signUp = async (req, res) => {
   try {
     const { username, email, password, confirmpassword } = req.body;
-
+    console.log(req.body)
     const verifyUser = signUpValidation.safeParse({ username, email, password, confirmpassword });
-
+    console.log(verifyUser)
     if (!verifyUser.success) {
+              console.log(verifyUser.error.flatten().fieldErrors.password[0])
       return res.status(403).json({
-        message: "Invalid signup",
+        error: verifyUser.error.flatten().fieldErrors.password[0],
         errors: verifyUser.error.flatten()
       });
     }
