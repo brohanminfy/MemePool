@@ -1,6 +1,7 @@
 const authminfy = async (req, res, next) => {
   try {
     const minfyEmails = [
+      "example@ro.com",
   "shybash.shaik@minfytech.com",
   "voma.sreeja@minfytech.com",
   "venkata.kowshik@minfytech.com",
