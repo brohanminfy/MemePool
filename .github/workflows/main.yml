@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
       - name: creating .env
         run: |
-          echo VITE_API_BASE_URL=$VITE_API_BASE_URL > ./MemePool/Frontend/.env
+          echo VITE_API_BASE_URL=$VITE_API_BASE_URL > ./MemePool/FrontEnd/.env
           
           echo PORT=$PORT > ./MemePool/backend/.env
           echo MONGODB_URI=$MONGODB_URI >> ./MemePool/backend/.env
