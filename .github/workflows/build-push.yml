@@ -1,0 +1,25 @@
+name: build and push docker images
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: DockerHub Login
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+    - name: Build & Push Backend
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/memepool-backend ./backend
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/memepool-backend
+
+    - name: Build & Push Frontend
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/memepool-frontend ./frontend
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/memepool-frontend
