@@ -125,7 +125,7 @@ export const AppProvider = ({ children }) => {
       });
 
       const data = await res.json();
-
+      console.log(data)
       if (!res.ok) {
         return { success: false, message: data.error || 'Signup failed' };
       }
