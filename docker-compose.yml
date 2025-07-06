@@ -12,7 +12,7 @@ services:
   frontend:
     image: uzaifminfy/memepool-frontend
     build:
-      context: ./frontend
+      context: ./FrontEnd
     ports:
       - "5173:80"
     depends_on:
