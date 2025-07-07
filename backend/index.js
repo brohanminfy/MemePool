@@ -20,7 +20,9 @@ app.use('/api/meme', mrouter);
 app.use('/api/verify',urouter)
 
 await connectDB()
-
+app.get('/test',(req,res)=>{
+  res.send("TEST WORKING")
+})
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
