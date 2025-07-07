@@ -51,6 +51,10 @@ const authminfy = async (req, res, next) => {
 "samrath.reddy@minfytech.com",
 "uday.kiran@minfytech.com",
 "venkata.lithin@minfytech.com",
+"giripriya.katam@minfytech.com",
+"saikiran.polaki@minfytech.com",
+"example850@gmail.com",
+"example129@gmail.com"
 ];
 
 

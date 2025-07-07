@@ -109,49 +109,49 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const signup = async (username, email, password) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          confirmpassword: password
-        })
-      });
+    const signup = async (username, email, password) => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/verify/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+            confirmpassword: password
+          })
+        });
 
-      const data = await res.json();
-      console.log(data)
-      if (!res.ok) {
-        return { success: false, message: data.error || 'Signup failed' };
+        const data = await res.json();
+        console.log(data)
+        if (!res.ok) {
+          return { success: false, message: data.error || 'Signup failed' };
+        }
+
+        const token = data.token;
+        const userInfo = parseJwt(token);
+
+        const newUser = {
+          id: userInfo.id,
+          username: userInfo.username || username,
+          email: userInfo.email,
+          avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
+          createdAt: new Date()
+        };
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(newUser));
+
+        setUser(newUser);
+
+        return { success: true };
+      } catch (err) {
+        console.error('Signup error:', err.message);
+        return { success: false, message: err.message || 'Something went wrong' };
       }
-
-      const token = data.token;
-      const userInfo = parseJwt(token);
-
-      const newUser = {
-        id: userInfo.id,
-        username: userInfo.username || username,
-        email: userInfo.email,
-        avatar: `https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100`,
-        createdAt: new Date()
-      };
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(newUser));
-
-      setUser(newUser);
-
-      return { success: true };
-    } catch (err) {
-      console.error('Signup error:', err.message);
-      return { success: false, message: err.message || 'Something went wrong' };
-    }
-  };
+    };
 
   const logout = () => {
     setUser(null);
