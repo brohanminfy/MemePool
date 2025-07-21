@@ -94,7 +94,7 @@ const LandingPage = () => {
                     : 'border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white'
                 }`}
               >
-                <span>Sign In
+                <span>Sign In</span>  
               </Link>
             </div>
           </div>
