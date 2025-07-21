@@ -70,7 +70,7 @@ const LandingPage = () => {
             }`}>
               Spread Smile <span className={`${
                 isDarkMode ? 'text-purple-400' : 'text-purple-600'
-              }`}>Happy Memeingss</span>
+              }`}>Happy Memeing</span>
             </h1>
 
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
