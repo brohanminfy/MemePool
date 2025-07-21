@@ -82,7 +82,7 @@ const LandingPage = () => {
                     : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg shadow-blue-500/30'
                 }`}
               >
-                <span>Join</span>
+                <span>Join Us</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
               
